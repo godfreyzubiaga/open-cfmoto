@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/onboarding_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg"
+    android:orientation="vertical">
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/ob_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/space_screen"
+        android:layout_marginTop="16dp"
+        app:indicatorColor="@color/brand_orange"
+        app:trackColor="@color/surface_high"
+        app:trackCornerRadius="4dp"
+        app:trackThickness="4dp" />
+
+    <ViewFlipper
+        android:id="@+id/ob_flipper"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <!-- 1. Welcome -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:minHeight="360dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/space_screen"
+                android:paddingVertical="24dp">
+
+                <ImageView
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_ride"
+                    android:tint="@color/brand_orange" />
+
+                <TextView
+                    style="@style/Text.Display"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center"
+                    android:text="Welcome to OpenCfMoto" />
+
+                <TextView
+                    style="@style/Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:text="Put Android Auto — Maps, Waze, music — on your CFMoto dash over Wi‑Fi. A quick one‑time setup and you're riding."
+                    android:textColor="@color/text_secondary" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- 2. Permissions -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="360dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/space_screen"
+                android:paddingVertical="24dp">
+
+                <TextView
+                    style="@style/Text.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Allow a couple of permissions" />
+
+                <TextView
+                    style="@style/Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="• Location — required by Android to join the bike's Wi‑Fi.\n• Notifications — keeps projection alive while you ride.\n\nCamera and microphone are asked for later, only when you actually scan a QR or use voice."
+                    android:textColor="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/ob_perm_status"
+                    style="@style/Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Not granted yet"
+                    android:textColor="@color/status_busy" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ob_perm_btn"
+                    style="@style/Widget.OpenCfMoto.Button.Connect"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Grant permissions" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- 3. Android Auto -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="360dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/space_screen"
+                android:paddingVertical="24dp">
+
+                <TextView
+                    style="@style/Text.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Set up Android Auto" />
+
+                <TextView
+                    style="@style/Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="OpenCfMoto relays Google's Android Auto to your dash. Install it, then in its settings tap “Version” ~10× to unlock Developer settings and turn ON “Add new cars to Android Auto”."
+                    android:textColor="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/ob_aa_status"
+                    style="@style/Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Checking…"
+                    android:textColor="@color/status_busy" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ob_aa_btn"
+                    style="@style/Widget.OpenCfMoto.Button.Connect"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Install Android Auto" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ob_aa_settings_btn"
+                    style="@style/Widget.OpenCfMoto.Segment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Open Android Auto settings" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- 4. Add bike -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:minHeight="360dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/space_screen"
+                android:paddingVertical="24dp">
+
+                <TextView
+                    style="@style/Text.Title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Add your bike" />
+
+                <TextView
+                    style="@style/Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="On the dash, open the phone‑projection / MotoPlay screen so it shows the pairing QR, then scan it. You can also do this later from the home screen."
+                    android:textColor="@color/text_secondary" />
+
+                <TextView
+                    android:id="@+id/ob_bike_status"
+                    style="@style/Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="No bike added yet"
+                    android:textColor="@color/status_busy" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/ob_scan_btn"
+                    style="@style/Widget.OpenCfMoto.Button.Connect"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="16dp"
+                    android:text="Scan dash QR" />
+            </LinearLayout>
+        </ScrollView>
+
+        <!-- 5. Done -->
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:minHeight="360dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="@dimen/space_screen"
+                android:paddingVertical="24dp">
+
+                <ImageView
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_power"
+                    android:tint="@color/status_live" />
+
+                <TextView
+                    style="@style/Text.Display"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:gravity="center"
+                    android:text="You're all set" />
+
+                <TextView
+                    style="@style/Text.Body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:text="Park the phone on the bike's USB charger, open OpenCfMoto and tap Connect. Set your route before you ride."
+                    android:textColor="@color/text_secondary" />
+            </LinearLayout>
+        </ScrollView>
+    </ViewFlipper>
+
+    <!-- Persistent nav bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/space_screen"
+        android:paddingVertical="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ob_back"
+            style="@style/Widget.OpenCfMoto.Button.Text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Back"
+            android:visibility="invisible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ob_skip"
+            style="@style/Widget.OpenCfMoto.Button.Text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Skip" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/ob_next"
+            style="@style/Widget.OpenCfMoto.Segment"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="120dp"
+            android:text="Next" />
+    </LinearLayout>
+</LinearLayout>
