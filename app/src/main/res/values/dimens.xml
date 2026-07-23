@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Consistent spacing / radius scale for a calmer, more spacious layout. -->
+    <dimen name="space_screen">20dp</dimen>
+    <dimen name="space_card">18dp</dimen>
+    <dimen name="space_gap">12dp</dimen>
+    <dimen name="space_gap_sm">8dp</dimen>
+    <dimen name="radius_card">24dp</dimen>
+    <dimen name="radius_control">16dp</dimen>
+    <dimen name="touch_min">48dp</dimen>
+    <dimen name="hud_control">52dp</dimen>
+</resources>

@@ -3,24 +3,27 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <!-- Brand: CFMoto-inspired sport orange on a dark "cockpit" surface. -->
-    <color name="brand_orange">#FF6A2C</color>
-    <color name="brand_orange_dark">#E85A1E</color>
+    <!-- Brand: CFMoto-inspired sport orange, slightly warmed for a cleaner, premium read. -->
+    <color name="brand_orange">#FF6B35</color>
+    <color name="brand_orange_dark">#E8551E</color>
+    <color name="accent_muted">#3A2A20</color>
     <color name="on_brand">#FFFFFF</color>
 
-    <!-- Dark surfaces -->
-    <color name="bg">#0E1116</color>
-    <color name="surface">#171B22</color>
-    <color name="surface_high">#1F242E</color>
-    <color name="outline">#2C333F</color>
+    <!-- Dark "cockpit" surfaces — deeper background, clearer surface separation. -->
+    <color name="bg">#0B0D12</color>
+    <color name="surface">#14181F</color>
+    <color name="surface_high">#1C222C</color>
+    <color name="surface_container">#232A36</color>
+    <color name="outline">#2A313D</color>
 
     <!-- Text -->
-    <color name="text_primary">#F2F5FA</color>
-    <color name="text_secondary">#9AA4B2</color>
+    <color name="text_primary">#F3F6FB</color>
+    <color name="text_secondary">#9AA6B6</color>
+    <color name="on_surface_disabled">#5A6474</color>
 
     <!-- Status semantics -->
-    <color name="status_live">#34C759</color>
+    <color name="status_live">#32D74B</color>
     <color name="status_busy">#FFB020</color>
     <color name="status_error">#FF5A52</color>
-    <color name="status_idle">#8A93A3</color>
+    <color name="status_idle">#7C8698</color>
 </resources>
