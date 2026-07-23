@@ -245,7 +245,10 @@ class MainActivity : AppCompatActivity() {
         (connectBtn as? MaterialButton)?.setIconResource(R.drawable.ic_power)
         findViewById<android.widget.TextView>(R.id.brand_version).text =
             "v${BuildConfig.VERSION_NAME}"
-        (findViewById<View>(R.id.btn_aa_stop) as? MaterialButton)?.setIconResource(R.drawable.ic_stop)
+        (findViewById<View>(R.id.btn_aa_stop) as? MaterialButton)?.apply {
+            setIconResource(R.drawable.ic_stop)
+            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
+        }
         (findViewById<View>(R.id.btn_hud_view) as? MaterialButton)?.apply {
             setIconResource(R.drawable.ic_cast)
             iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
