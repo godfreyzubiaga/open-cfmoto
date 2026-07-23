@@ -406,6 +406,17 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "Couldn't open donate link", Toast.LENGTH_SHORT).show()
             }
         }
+
+        // Scan / Mirror start a fresh session — only offer them from an idle state, mirroring the
+        // guard the old home screen applied to these same buttons.
+        val phase = ConnectionState.phase
+        val canStart = !phase.busy && phase != Phase.STREAMING && phase != Phase.MIRRORING
+        for (id in intArrayOf(R.id.btn_aa_start, R.id.btn_mirror_start)) {
+            v.findViewById<View>(id)?.let {
+                it.isEnabled = canStart
+                it.alpha = if (canStart) 1f else 0.4f
+            }
+        }
     }
 
     /** Mirror the whole phone screen to the dash (screen-capture consent → scan). */
@@ -650,9 +661,8 @@ class MainActivity : AppCompatActivity() {
         // Connect: available when idle/stopped/error; disabled while busy (a connect is already in
         // flight) and while live (use Stop first, or it just re-arms — keep it simple: disabled live).
         connectBtn.isEnabled = !busy && !live
-        // Scan / Mirror start new sessions — only from an idle state.
-        setEnabled(R.id.btn_aa_start, !busy && !live)
-        setEnabled(R.id.btn_mirror_start, !busy && !live)
+        // Scan / Mirror start new sessions — they live in the More sheet now and are gated there
+        // (see [bindMoreSheet]) since they aren't part of the home content view.
         // Stop only matters once something is running or connecting.
         setEnabled(R.id.btn_aa_stop, busy || live)
     }
