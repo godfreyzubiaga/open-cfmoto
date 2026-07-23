@@ -395,6 +395,14 @@
                         android:text="CL‑C450" />
                 </LinearLayout>
 
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/profile_sr450"
+                    style="@style/Widget.OpenCfMoto.Segment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="450SR — non-touch sport dash" />
+
                 <TextView
                     android:id="@+id/profile_desc"
                     style="@style/Text.Body"

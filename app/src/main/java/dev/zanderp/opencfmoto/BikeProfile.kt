@@ -507,6 +507,37 @@ object Cfdl16MotoPlayLandscapeProfile : BikeProfile {
     ): Boolean = Cfdl26PortraitProfile.handleUnknownControl(tag, frame, out, log)
 }
 
+/**
+ * CFMoto 450SR (and the SR‑S / TC class) — a CFDL16-class **non-touch sport dash** driven by the
+ * handlebar buttons + the in-app on-screen pad. Landscape ~800×400 panel; Android Auto is requested
+ * at landscape 800×480, exactly like the proven CFDL16 MotoPlay path.
+ *
+ * This is a **manual-select** profile (Advanced ▸ Bike profile ▸ 450SR). It deliberately never
+ * auto-claims a CLIENT_INFO ([score] returns 0) and matches no QR modelId, so registering it leaves
+ * automatic detection byte-identical — a 450SR that isn't recognised still lands on Legacy/CFDL16 as
+ * before, and a rider who knows their bike can pin it. Behaviourally it mirrors
+ * [Cfdl16MotoPlayLandscapeProfile]: non-touch, supportFunction 128, and the standard CFDL16/CFDL26
+ * notify-ack burst so the dash opens its media ports.
+ */
+object Sr450Profile : BikeProfile {
+    override val name = "CFMoto 450SR (CFDL16 non-touch)"
+    override val requiresSockServerAuth = false
+    override val supportsScreenTouch = false
+    override val advertisedSupportFunction = 128
+    override val panelSize = 800 to 400
+    override val aaVideo = AaVideoSpec(AaResolution.LANDSCAPE_800x480, dpi = 160)
+
+    /** Manual-select only — never auto-claim, so [BikeProfiles.select] scoring is unchanged. */
+    override fun score(info: JSONObject): Int = 0
+
+    override fun buildClientInfoReply(info: JSONObject, huid: String?, phoneUuid: String): JSONObject =
+        basePhoneClientInfo(huid, phoneUuid, advertisedSupportFunction)
+
+    override fun handleUnknownControl(
+        tag: String, frame: PxcFrame, out: OutputStream, log: (String) -> Unit,
+    ): Boolean = Cfdl26PortraitProfile.handleUnknownControl(tag, frame, out, log)
+}
+
 /** Near-square CL‑C450 panel 544×512 — needs AA 1280×720 containing viewport (eugen0309). */
 object ClC450Profile : BikeProfile {
     override val name = "CL‑C450 (544×512)"

@@ -11,7 +11,8 @@ import android.content.Context
  */
 enum class ProfileOverride(val id: String, val shortLabel: String, val detail: String) {
     AUTO("auto", "Auto", "Detect from the bike (recommended)"),
-    LEGACY("legacy", "Legacy", "CFDL16 / 450SR-style non-touch"),
+    LEGACY("legacy", "Legacy", "CFDL16 / generic non-touch fallback"),
+    SR450("sr450", "450SR", "CFDL16 non-touch sport (450SR / SR‑S / TC)"),
     NK800("nk800", "800NK", "CRCP / sdk 0.9.23.x non-touch"),
     NK_ADV("nk_adv", "800NK Adv", "CFDL26 touch 720×712"),
     CFDL26_LAND("cfdl26_land", "800MT", "CFDL26 landscape touch"),
@@ -22,6 +23,7 @@ enum class ProfileOverride(val id: String, val shortLabel: String, val detail: S
     fun resolve(): BikeProfile? = when (this) {
         AUTO -> null
         LEGACY -> LegacyCfdl16Profile
+        SR450 -> Sr450Profile
         NK800 -> Nk800Profile
         NK_ADV -> Cfdl26NkTouchProfile
         CFDL26_LAND -> Cfdl26LandscapeProfile
