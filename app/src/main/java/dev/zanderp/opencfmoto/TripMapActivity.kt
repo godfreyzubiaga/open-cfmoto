@@ -73,7 +73,7 @@ class TripMapActivity : AppCompatActivity() {
 
         val line = Polyline(map).apply {
             setPoints(geo)
-            outlinePaint.color = ContextCompat.getColor(this@TripMapActivity, R.color.brand_orange)
+            outlinePaint.color = ContextCompat.getColor(this@TripMapActivity, R.color.brand_accent)
             outlinePaint.strokeWidth = 10f
         }
         map.overlays.add(line)

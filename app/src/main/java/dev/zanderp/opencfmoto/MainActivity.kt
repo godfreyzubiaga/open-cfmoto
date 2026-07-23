@@ -37,13 +37,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var logView: TextView
     private lateinit var logScroll: ScrollView
     private lateinit var logPanel: View
-    private lateinit var tipsPanel: View
     private lateinit var statusView: TextView
     private lateinit var statusIcon: android.widget.ImageView
     private lateinit var statusProgress: View
     private lateinit var bikeView: TextView
     private lateinit var connectBtn: Button
-    private lateinit var toggleLogBtn: Button
     private lateinit var prober: EasyConnProber
     private var bleWakeUp: BleWakeUp? = null
     private val ts = SimpleDateFormat("HH:mm:ss.SSS", Locale.US)
@@ -234,22 +232,19 @@ class MainActivity : AppCompatActivity() {
         logView = findViewById(R.id.log_view)
         logScroll = findViewById(R.id.log_scroll)
         logPanel = findViewById(R.id.log_panel)
-        tipsPanel = findViewById(R.id.tips_panel)
         statusView = findViewById(R.id.status_view)
         statusIcon = findViewById(R.id.status_icon)
         statusProgress = findViewById(R.id.status_progress)
         bikeView = findViewById(R.id.bike_view)
         connectBtn = findViewById(R.id.btn_connect)
-        toggleLogBtn = findViewById(R.id.btn_toggle_log)
         logView.movementMethod = ScrollingMovementMethod()
 
         // Icons are set here rather than in XML: in this AGP/compileSdk setup, library (res-auto)
         // attributes like app:icon don't resolve in layouts, so we assign them programmatically.
+        // (Buttons that live in the "More" bottom sheet get their icons in [bindMoreSheet].)
         (connectBtn as? MaterialButton)?.setIconResource(R.drawable.ic_power)
         findViewById<android.widget.TextView>(R.id.brand_version).text =
             "v${BuildConfig.VERSION_NAME}"
-        (findViewById<View>(R.id.btn_aa_start) as? MaterialButton)?.setIconResource(R.drawable.ic_qr)
-        (findViewById<View>(R.id.btn_mirror_start) as? MaterialButton)?.setIconResource(R.drawable.ic_cast)
         (findViewById<View>(R.id.btn_aa_stop) as? MaterialButton)?.setIconResource(R.drawable.ic_stop)
         (findViewById<View>(R.id.btn_hud_view) as? MaterialButton)?.apply {
             setIconResource(R.drawable.ic_cast)
@@ -257,22 +252,6 @@ class MainActivity : AppCompatActivity() {
         }
         (findViewById<View>(R.id.btn_controls) as? MaterialButton)?.apply {
             setIconResource(R.drawable.ic_devices)
-            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
-        }
-        (findViewById<View>(R.id.btn_setup) as? MaterialButton)?.apply {
-            setIconResource(R.drawable.ic_settings)
-            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
-        }
-        (findViewById<View>(R.id.btn_devices) as? MaterialButton)?.apply {
-            setIconResource(R.drawable.ic_devices)
-            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
-        }
-        (findViewById<View>(R.id.btn_trip) as? MaterialButton)?.apply {
-            setIconResource(R.drawable.ic_speed)
-            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
-        }
-        (toggleLogBtn as? MaterialButton)?.apply {
-            setIconResource(R.drawable.ic_logs)
             iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
         }
 
@@ -336,21 +315,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Scan a (new) bike — always re-scans even if one is remembered. Android Auto receiver runs
-        // in its own foreground service so it survives lock/background.
-        findViewById<Button>(R.id.btn_aa_start).setOnClickListener { startAaScan() }
-
-        findViewById<Button>(R.id.btn_mirror_start).setOnClickListener {
-            log("→ Mirror Mode: requesting screen-capture consent…")
-            pendingAaStart = false
-            ensureLocationPermission()
-            try {
-                val mpm = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-                projectionLauncher.launch(mpm.createScreenCaptureIntent())
-            } catch (e: Exception) {
-                log("mirror start failed ($e)")
-            }
-        }
         // Stop everything: Android Auto receiver, bike PXC, projection, and leave the bike Wi-Fi.
         findViewById<Button>(R.id.btn_aa_stop).setOnClickListener {
             log("→ stopping everything (Android Auto + bike)")
@@ -367,33 +331,75 @@ class MainActivity : AppCompatActivity() {
             ConnectionState.set(Phase.STOPPED, "")
         }
 
-        toggleLogBtn.setOnClickListener {
-            val show = logPanel.visibility != View.VISIBLE
-            logPanel.visibility = if (show) View.VISIBLE else View.GONE
-            // The tips panel and the log panel share the flexible space, so only one shows at a time.
-            tipsPanel.visibility = if (show) View.GONE else View.VISIBLE
-            toggleLogBtn.text = if (show) "Hide logs" else "Logs"
-        }
-
         findViewById<View>(R.id.btn_hud_view).setOnClickListener { startActivity(Intent(this, HudViewActivity::class.java)) }
         findViewById<View>(R.id.btn_controls).setOnClickListener { startActivity(Intent(this, ControlsActivity::class.java)) }
-        findViewById<Button>(R.id.btn_navigate).setOnClickListener { navigateToTyped() }
-        (findViewById<View>(R.id.et_destination) as? android.widget.EditText)?.setOnEditorActionListener { _, _, _ ->
-            navigateToTyped(); true
-        }
-        findViewById<View>(R.id.btn_devices).setOnClickListener { GarageActivity.start(this) }
-
-        findViewById<View>(R.id.btn_trip).setOnClickListener { TripActivity.start(this) }
-
-        findViewById<Button>(R.id.btn_share_log).setOnClickListener { shareLog() }
-
-        findViewById<Button>(R.id.btn_setup).setOnClickListener { SetupActivity.start(this) }
-        findViewById<View>(R.id.btn_about).setOnClickListener { AboutActivity.start(this) }
         findViewById<View>(R.id.brand_title).setOnClickListener { AboutActivity.start(this) }
-        findViewById<View>(R.id.btn_about_page).setOnClickListener { AboutActivity.start(this) }
-        findViewById<View>(R.id.btn_check_update).setOnClickListener { checkUpdateManual() }
-        findViewById<View>(R.id.btn_problem_report).setOnClickListener { reportProblem() }
-        findViewById<View>(R.id.btn_donate).setOnClickListener {
+        // Tapping the hero status card jumps to the Garage ("which bike am I connecting to?").
+        findViewById<View>(R.id.status_card).setOnClickListener { GarageActivity.start(this) }
+        // Everything low-traffic lives one tap deeper in the "More" bottom sheet.
+        findViewById<View>(R.id.btn_more).setOnClickListener { showMoreSheet() }
+
+        // Diagnostics panel (hidden by default; revealed from the More sheet).
+        findViewById<Button>(R.id.btn_share_log).setOnClickListener { shareLog() }
+        findViewById<Button>(R.id.btn_clear).setOnClickListener {
+            LogBus.clear()
+            logView.text = ""
+        }
+        findViewById<View>(R.id.btn_hide_log).setOnClickListener { logPanel.visibility = View.GONE }
+
+        log("Ready. Tap Connect to project Android Auto to your dash.")
+
+        // First launch: walk the user through the one-time prerequisites.
+        try {
+            if (!AppFlags.onboardingSeen(this)) OnboardingActivity.start(this)
+            else maybeAutoConnect()
+            maybeResumeFromParked(intent)
+        } catch (e: Exception) {
+            log("startup failed (UI still up): $e")
+            CrashGuard.persistSession(this)
+        }
+    }
+
+    /** Build and show the home "More" bottom sheet with the low-traffic actions. */
+    private fun showMoreSheet() {
+        val sheet = com.google.android.material.bottomsheet.BottomSheetDialog(this)
+        val view = layoutInflater.inflate(R.layout.sheet_home_more, null)
+        sheet.setContentView(view)
+        bindMoreSheet(view, sheet)
+        sheet.show()
+    }
+
+    /** Wire the sheet's rows. Each dismisses the sheet, then runs the same action it did on the old
+     *  home screen — the click bodies are unchanged, only relocated. */
+    private fun bindMoreSheet(v: View, sheet: com.google.android.material.bottomsheet.BottomSheetDialog) {
+        fun icon(id: Int, res: Int) = (v.findViewById<View>(id) as? MaterialButton)?.apply {
+            setIconResource(res)
+            iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
+        }
+        icon(R.id.btn_aa_start, R.drawable.ic_qr)
+        icon(R.id.btn_mirror_start, R.drawable.ic_cast)
+        icon(R.id.btn_devices, R.drawable.ic_devices)
+        icon(R.id.btn_trip, R.drawable.ic_speed)
+        icon(R.id.btn_setup, R.drawable.ic_settings)
+        icon(R.id.btn_toggle_log, R.drawable.ic_logs)
+
+        fun row(id: Int, action: () -> Unit) = v.findViewById<View>(id).setOnClickListener {
+            sheet.dismiss()
+            action()
+        }
+        row(R.id.btn_aa_start) { startAaScan() }
+        row(R.id.btn_mirror_start) { startMirror() }
+        row(R.id.btn_devices) { GarageActivity.start(this) }
+        row(R.id.btn_trip) { TripActivity.start(this) }
+        row(R.id.btn_setup) { SetupActivity.start(this) }
+        row(R.id.btn_toggle_log) {
+            logPanel.visibility = View.VISIBLE
+            logScroll.post { logScroll.fullScroll(ScrollView.FOCUS_DOWN) }
+        }
+        row(R.id.btn_check_update) { checkUpdateManual() }
+        row(R.id.btn_problem_report) { reportProblem() }
+        row(R.id.btn_about_page) { AboutActivity.start(this) }
+        row(R.id.btn_donate) {
             try {
                 startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(AboutActivity.URL_KOFI)))
             } catch (_: Exception) {
@@ -401,21 +407,28 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        findViewById<Button>(R.id.btn_clear).setOnClickListener {
-            LogBus.clear()
-            logView.text = ""
+        // Scan / Mirror start a fresh session — only offer them from an idle state, mirroring the
+        // guard the old home screen applied to these same buttons.
+        val phase = ConnectionState.phase
+        val canStart = !phase.busy && phase != Phase.STREAMING && phase != Phase.MIRRORING
+        for (id in intArrayOf(R.id.btn_aa_start, R.id.btn_mirror_start)) {
+            v.findViewById<View>(id)?.let {
+                it.isEnabled = canStart
+                it.alpha = if (canStart) 1f else 0.4f
+            }
         }
+    }
 
-        log("Ready. Tap Connect to project Android Auto to your dash.")
-
-        // First launch: walk the user through the one-time prerequisites.
+    /** Mirror the whole phone screen to the dash (screen-capture consent → scan). */
+    private fun startMirror() {
+        log("→ Mirror Mode: requesting screen-capture consent…")
+        pendingAaStart = false
+        ensureLocationPermission()
         try {
-            if (!SetupActivity.hasSeen(this)) SetupActivity.start(this)
-            else maybeAutoConnect()
-            maybeResumeFromParked(intent)
+            val mpm = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+            projectionLauncher.launch(mpm.createScreenCaptureIntent())
         } catch (e: Exception) {
-            log("startup failed (UI still up): $e")
-            CrashGuard.persistSession(this)
+            log("mirror start failed ($e)")
         }
     }
 
@@ -591,6 +604,7 @@ class MainActivity : AppCompatActivity() {
         statusView.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
         statusIcon.setColorFilter(color)
         statusProgress.visibility = if (phase.busy) View.VISIBLE else View.GONE
+        updateStepper(phase)
 
         // The bike's link ports are held by the official CFMoto app — offer to close it (see
         // EasyConnProber's bind-conflict path). Show once per error so we don't nag on every redraw.
@@ -614,6 +628,32 @@ class MainActivity : AppCompatActivity() {
         updateButtonStates(phase)
     }
 
+    /**
+     * Light the connect-sequence stepper in the hero card so a rider can see how far along the
+     * (multi-step) connect is. Only the forward sequence has a meaningful position; other phases
+     * (idle, mirror, reconnecting, error) hide the strip. Pure display — keyed off [phase] only.
+     */
+    private fun updateStepper(phase: Phase) {
+        val stepper = findViewById<View>(R.id.status_stepper)
+        val done = when (phase) {
+            Phase.STARTING_AA -> 1
+            Phase.AA_VIDEO_LIVE -> 2
+            Phase.JOINING_WIFI -> 3
+            Phase.PXC_CONNECTING -> 4
+            Phase.STREAMING -> 5
+            else -> 0
+        }
+        stepper.visibility = if (done == 0) View.GONE else View.VISIBLE
+        if (done == 0) return
+        val dots = intArrayOf(
+            R.id.step_dot_1, R.id.step_dot_2, R.id.step_dot_3, R.id.step_dot_4, R.id.step_dot_5)
+        val on = ContextCompat.getColor(this, R.color.brand_accent)
+        val off = ContextCompat.getColor(this, R.color.surface_high)
+        dots.forEachIndexed { i, id ->
+            findViewById<View>(id).setBackgroundColor(if (i < done) on else off)
+        }
+    }
+
     /** Enable only the actions that make sense in the current [phase], so the UI guides the rider. */
     private fun updateButtonStates(phase: Phase) {
         val live = phase == Phase.STREAMING || phase == Phase.MIRRORING
@@ -621,9 +661,8 @@ class MainActivity : AppCompatActivity() {
         // Connect: available when idle/stopped/error; disabled while busy (a connect is already in
         // flight) and while live (use Stop first, or it just re-arms — keep it simple: disabled live).
         connectBtn.isEnabled = !busy && !live
-        // Scan / Mirror start new sessions — only from an idle state.
-        setEnabled(R.id.btn_aa_start, !busy && !live)
-        setEnabled(R.id.btn_mirror_start, !busy && !live)
+        // Scan / Mirror start new sessions — they live in the More sheet now and are gated there
+        // (see [bindMoreSheet]) since they aren't part of the home content view.
         // Stop only matters once something is running or connecting.
         setEnabled(R.id.btn_aa_stop, busy || live)
     }
@@ -864,21 +903,6 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(
                 this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1,
             )
-        }
-    }
-
-    /** Type a destination on the phone → Google Maps turn-by-turn, which shows on the dash via AA. */
-    private fun navigateToTyped() {
-        val field = findViewById<android.widget.EditText>(R.id.et_destination)
-        val dest = field.text?.toString()?.trim().orEmpty()
-        if (dest.isEmpty()) {
-            Toast.makeText(this, "Type a destination first", Toast.LENGTH_SHORT).show()
-            return
-        }
-        if (NavLauncher.navigate(this, dest, ::log)) {
-            // Dismiss the keyboard so the map is visible.
-            (getSystemService(INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager)
-                ?.hideSoftInputFromWindow(field.windowToken, 0)
         }
     }
 

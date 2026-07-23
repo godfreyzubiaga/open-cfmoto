@@ -2,7 +2,9 @@ package dev.zanderp.opencfmoto
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import androidx.core.content.ContextCompat
@@ -71,4 +73,40 @@ object SetupHelper {
     /** Everything we can verify is in place. Head-unit mode can't be verified, so it isn't gated. */
     fun coreReady(ctx: Context): Boolean =
         isAndroidAutoInstalled(ctx) && isPlayServicesPresent(ctx) && permissionsGranted(ctx)
+
+    /**
+     * Open Android Auto: its settings if installed, else the Play Store listing. Shared by the Setup
+     * screen and the first-run [OnboardingActivity]. Returns false if nothing could be launched.
+     */
+    fun openAndroidAutoOrStore(ctx: Context): Boolean {
+        if (isAndroidAutoInstalled(ctx)) return openAndroidAutoSettings(ctx)
+        val market = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$GEARHEAD_PACKAGE"))
+        return try {
+            ctx.startActivity(market)
+            true
+        } catch (_: Exception) {
+            try {
+                ctx.startActivity(Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://play.google.com/store/apps/details?id=$GEARHEAD_PACKAGE")))
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+    }
+
+    /** Deep-link into Android Auto's own settings (where head-unit / developer mode is toggled). */
+    fun openAndroidAutoSettings(ctx: Context): Boolean = try {
+        ctx.startActivity(Intent("android.settings.ANDROID_AUTO_SETTINGS").setPackage(GEARHEAD_PACKAGE))
+        true
+    } catch (_: Exception) {
+        try {
+            ctx.startActivity(Intent(Intent.ACTION_MAIN).setClassName(
+                GEARHEAD_PACKAGE,
+                "com.google.android.projection.gearhead.companion.settings.DefaultSettingsActivity"))
+            true
+        } catch (_: Exception) {
+            false
+        }
+    }
 }
