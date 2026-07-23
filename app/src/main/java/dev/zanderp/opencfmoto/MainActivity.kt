@@ -647,7 +647,7 @@ class MainActivity : AppCompatActivity() {
         if (done == 0) return
         val dots = intArrayOf(
             R.id.step_dot_1, R.id.step_dot_2, R.id.step_dot_3, R.id.step_dot_4, R.id.step_dot_5)
-        val on = ContextCompat.getColor(this, R.color.brand_orange)
+        val on = ContextCompat.getColor(this, R.color.brand_accent)
         val off = ContextCompat.getColor(this, R.color.surface_high)
         dots.forEachIndexed { i, id ->
             findViewById<View>(id).setBackgroundColor(if (i < done) on else off)

@@ -3,9 +3,9 @@
     <!-- A dark "cockpit" theme with a CFMoto-orange accent. Dark is intentional: this runs on a
          bike in daylight/handlebar context and mirrors a commercial head-unit look. -->
     <style name="Base.Theme.OpenCfMoto" parent="Theme.Material3.Dark.NoActionBar">
-        <item name="colorPrimary">@color/brand_orange</item>
+        <item name="colorPrimary">@color/brand_accent</item>
         <item name="colorOnPrimary">@color/on_brand</item>
-        <item name="colorPrimaryContainer">@color/brand_orange_dark</item>
+        <item name="colorPrimaryContainer">@color/brand_accent_dark</item>
         <item name="colorOnPrimaryContainer">@color/on_brand</item>
 
         <item name="android:colorBackground">@color/bg</item>

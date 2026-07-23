@@ -23,7 +23,7 @@
             android:layout_height="26dp"
             android:contentDescription="Trip"
             android:src="@drawable/ic_speed"
-            android:tint="@color/brand_orange" />
+            android:tint="@color/brand_accent" />
 
         <TextView
             android:layout_width="0dp"

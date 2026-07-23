@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/space_screen"
         android:layout_marginTop="16dp"
-        app:indicatorColor="@color/brand_orange"
+        app:indicatorColor="@color/brand_accent"
         app:trackColor="@color/surface_high"
         app:trackCornerRadius="4dp"
         app:trackThickness="4dp" />
@@ -44,7 +44,7 @@
                     android:layout_height="96dp"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_ride"
-                    android:tint="@color/brand_orange" />
+                    android:tint="@color/brand_accent" />
 
                 <TextView
                     style="@style/Text.Display"

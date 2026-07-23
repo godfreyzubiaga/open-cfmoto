@@ -21,7 +21,7 @@
             android:layout_height="26dp"
             android:contentDescription="@null"
             android:src="@drawable/ic_devices"
-            android:tint="@color/brand_orange" />
+            android:tint="@color/brand_accent" />
 
         <TextView
             style="@style/Text.Display"

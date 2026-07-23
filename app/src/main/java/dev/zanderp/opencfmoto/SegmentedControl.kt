@@ -21,7 +21,7 @@ object SegmentedControl {
 
     /** Paint the segment whose value == [selected] as active. */
     fun <T> highlight(ctx: Context, selected: T, vararg pairs: Pair<Int, T>) {
-        val onBg = ContextCompat.getColor(ctx, R.color.brand_orange)
+        val onBg = ContextCompat.getColor(ctx, R.color.brand_accent)
         val onText = ContextCompat.getColor(ctx, R.color.on_brand)
         val offBg = ContextCompat.getColor(ctx, R.color.surface_high)
         val offText = ContextCompat.getColor(ctx, R.color.text_primary)
