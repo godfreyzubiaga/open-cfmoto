@@ -36,6 +36,7 @@ object BikeWifi {
     private var cm: ConnectivityManager? = null
     private var callback: ConnectivityManager.NetworkCallback? = null
     private var request: NetworkRequest? = null
+    private var appContext: Context? = null
     private val handler = Handler(Looper.getMainLooper())
 
     var currentNetwork: Network? = null
@@ -82,6 +83,7 @@ object BikeWifi {
         callback?.let { try { cm.unregisterNetworkCallback(it) } catch (_: Exception) {} }
 
         this.cm = cm
+        this.appContext = context.applicationContext
         this.ssid = ssid
         this.onAvailableCb = onAvailable
         this.onLostCb = onLost
@@ -100,8 +102,94 @@ object BikeWifi {
             .setNetworkSpecifier(specifier)
             .build()
 
-        log("requesting Wi-Fi join: $ssid …")
+        attemptJoin()
+    }
+
+    /**
+     * Acquire the bike network, preferring an existing association over a fresh request.
+     *
+     * A [WifiNetworkSpecifier] request is NOT satisfied by the framework when the phone is already
+     * associated with that SSID (e.g. it stayed connected after a manual Stop, or auto-reconnected as
+     * a saved network): none of onAvailable/onUnavailable fire and the app hangs on "Connecting to
+     * bike Wi-Fi". So if we're already on the target SSID, bind that live [Network] directly and skip
+     * the request entirely. Only when we're NOT already on it do we issue the specifier request (which
+     * shows the system accept dialog on first use). Called for both the initial join and every rejoin.
+     */
+    private fun attemptJoin() {
+        val cm = cm ?: return
+        val ctx = appContext
+        val existing = if (ctx != null) try { findAssociatedNetwork(cm, ctx, ssid) } catch (_: Exception) { null } else null
+        if (existing != null) {
+            currentNetwork = existing
+            try { cm.bindProcessToNetwork(existing) } catch (_: Exception) {}
+            rejoinAttempts = 0
+            logLinkOnce(existing)
+            registerLossWatcher()
+            if (!firstDelivered) {
+                firstDelivered = true
+                logCb?.invoke("Wi-Fi already connected: $ssid (network=$existing, bound) — skipping re-request")
+                onAvailableCb?.invoke(existing)
+            } else {
+                logCb?.invoke("Wi-Fi re-acquired (already connected): $ssid — restarting bike link")
+                BikeLink.onWifiReacquired(existing)
+            }
+            return
+        }
+        logCb?.invoke("requesting Wi-Fi join: $ssid …")
         registerCallback()
+    }
+
+    /**
+     * The live wifi [Network] the phone is currently associated with, if its SSID matches [ssid].
+     * Returns null when we're on a different network (or none) so the caller falls back to a proper
+     * join request. Confirms the association via [WifiManager] first (works on API 29+, where the
+     * per-network [NetworkCapabilities.getTransportInfo] SSID can be redacted).
+     */
+    private fun findAssociatedNetwork(cm: ConnectivityManager, ctx: Context, ssid: String): Network? {
+        val target = ssid.trim('"')
+        if (target.isEmpty()) return null
+        val wm = ctx.getSystemService(Context.WIFI_SERVICE) as? WifiManager ?: return null
+        @Suppress("DEPRECATION")
+        val assoc = wm.connectionInfo?.ssid?.trim('"')
+        if (assoc == null || assoc == "<unknown ssid>" || !assoc.equals(target, ignoreCase = true)) return null
+        // We're associated with the target SSID — find its Network object.
+        val wifiNets = cm.allNetworks.filter {
+            cm.getNetworkCapabilities(it)?.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) == true
+        }
+        // Prefer a capabilities-confirmed SSID match; else the sole wifi network (SSID redacted on
+        // older APIs) since WifiManager already confirmed we're on the target.
+        wifiNets.firstOrNull { n ->
+            val info = cm.getNetworkCapabilities(n)?.transportInfo as? android.net.wifi.WifiInfo
+            info?.ssid?.trim('"')?.equals(target, ignoreCase = true) == true
+        }?.let { return it }
+        return wifiNets.singleOrNull()
+    }
+
+    /**
+     * Passive watcher for the short-circuit path: when we bind an already-connected network (no
+     * specifier request was issued), there's no request callback to notice a later drop. Observe wifi
+     * loss so an ignition cycle still triggers [scheduleRejoin]. [clearCapabilities] matches both
+     * normal and local-only (no-internet) wifi networks.
+     */
+    private fun registerLossWatcher() {
+        val cm = cm ?: return
+        callback?.let { try { cm.unregisterNetworkCallback(it) } catch (_: Exception) {} }
+        val req = NetworkRequest.Builder()
+            .clearCapabilities()
+            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+            .build()
+        val cb = object : ConnectivityManager.NetworkCallback() {
+            override fun onLost(network: Network) {
+                if (network != currentNetwork) return
+                logCb?.invoke("Wi-Fi lost: $network")
+                currentNetwork = null
+                linkLogged = false
+                onLostCb?.invoke()
+                if (active) scheduleRejoin()
+            }
+        }
+        callback = cb
+        try { cm.registerNetworkCallback(req, cb) } catch (_: Exception) {}
     }
 
     private fun registerCallback() {
@@ -183,7 +271,7 @@ object BikeWifi {
             if (ConnectionState.phase != Phase.WAITING_FOR_BIKE) {
                 ConnectionState.set(Phase.RECONNECTING, "waiting for bike Wi-Fi")
             }
-            registerCallback()
+            attemptJoin()
         }, delay)
     }
 
