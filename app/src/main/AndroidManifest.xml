@@ -73,7 +73,16 @@
             android:name=".QrScanActivity"
             android:exported="false" />
         <activity
+            android:name=".OnboardingActivity"
+            android:exported="false" />
+        <activity
             android:name=".SetupActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AdvancedSettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SupportedBikesActivity"
             android:exported="false" />
         <activity
             android:name=".TripActivity"

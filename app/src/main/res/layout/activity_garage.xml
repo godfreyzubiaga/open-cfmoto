@@ -12,40 +12,38 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="20dp"
-        android:paddingTop="10dp"
+        android:paddingHorizontal="@dimen/space_screen"
+        android:paddingTop="16dp"
         android:paddingBottom="6dp">
 
         <ImageView
             android:layout_width="26dp"
             android:layout_height="26dp"
-            android:contentDescription="Garage"
+            android:contentDescription="@null"
             android:src="@drawable/ic_devices"
             android:tint="@color/brand_orange" />
 
         <TextView
+            style="@style/Text.Display"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="10dp"
-            android:text="Garage"
-            android:textColor="@color/text_primary"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:layout_weight="1"
+            android:text="Garage" />
     </LinearLayout>
 
     <TextView
+        style="@style/Text.Body"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="20dp"
-        android:paddingBottom="4dp"
-        android:text="Each bike keeps its own name, photo, screen fit, resolution, power mode and button mapping. Tap a bike to make it active or edit it."
-        android:textColor="@color/text_secondary"
-        android:textSize="13sp"
-        android:lineSpacingExtra="3dp" />
+        android:paddingHorizontal="@dimen/space_screen"
+        android:paddingBottom="6dp"
+        android:text="Each bike keeps its own name, photo, screen fit, resolution, power and button map. Tap a bike to make it active or edit it."
+        android:textColor="@color/text_secondary" />
 
     <TextView
         android:id="@+id/garage_empty"
+        style="@style/Text.Body"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
@@ -54,7 +52,6 @@
         android:text="No bikes yet.\nScan your dash QR to add your first motorcycle."
         android:textColor="@color/text_secondary"
         android:textSize="15sp"
-        android:lineSpacingExtra="4dp"
         android:visibility="gone" />
 
     <ScrollView
@@ -73,8 +70,9 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/garage_scan"
+        style="@style/Widget.OpenCfMoto.Button.Connect"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="56dp"
         android:layout_margin="16dp"
         android:text="Scan new bike"
         app:icon="@drawable/ic_qr" />
